@@ -1,11 +1,16 @@
 import os
-from keras.models import Sequential
-from keras.layers import Conv2D, MaxPooling2D
-from keras.layers import Dropout, Flatten, Dense
-from keras_preprocessing.image import ImageDataGenerator,load_img,img_to_array
-from keras.optimizers import Adadelta
-from keras.constraints import max_norm
-from keras.losses import categorical_crossentropy
+import matplotlib.pyplot as plt
+
+from tensorflow.keras.layers import Conv2D, MaxPooling2D
+from tensorflow.keras.layers import Dropout, Flatten, Dense
+from tensorflow.keras.losses import categorical_crossentropy
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.optimizers import Adadelta
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+from tensorflow.keras.applications.resnet50 import ResNet50
+
+r = ResNet50()
 
 '''
 Model instance class with training and testing methods. Classifies chess pieces in images from 
@@ -32,25 +37,52 @@ chess_piece_types = ['bishop', 'rook', 'pawn', 'knight']
 num_classes = len(chess_piece_types)
 
 
+def visualize(epochs, fit_generator):
+    acc = fit_generator.history['accuracy']
+    val_acc = fit_generator.history['val_accuracy']
+
+    loss = fit_generator.history['loss']
+    val_loss = fit_generator.history['val_loss']
+
+    epochs_range = range(epochs)
+
+    plt.figure(figsize=(8, 8))
+    plt.subplot(1, 2, 1)
+    plt.plot(epochs_range, acc, label='Training Accuracy')
+    plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+    plt.legend(loc='lower right')
+    plt.title('Training and Validation Accuracy')
+
+    plt.subplot(1, 2, 2)
+    plt.plot(epochs_range, loss, label='Training Loss')
+    plt.plot(epochs_range, val_loss, label='Validation Loss')
+    plt.legend(loc='upper right')
+    plt.title('Training and Validation Loss')
+    plt.show()
+
+
 class Model:
     def __init__(self):
         self.model = Sequential()
-        # TODO: Try with two 32-filter convolution + pooling layer iterations
         self.model.add(Conv2D(32,
-                               (3, 3),
-                              input_shape=(300, 300, 3),padding='same',
-                                activation='relu'))
+                              (3, 3),
+                              input_shape=(300, 300, 3),
+                              padding='same',
+                              activation='relu'))
         self.model.add(Conv2D(32,
-                              (3, 3),padding='same',
+                              (3, 3),
+                              padding='same',
                               activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
         self.model.add(Dropout(0.25))
 
         self.model.add(Conv2D(64,
-                              (3, 3),padding='same',
+                              (3, 3),
+                              padding='same',
                               activation='relu'))
         self.model.add(Conv2D(64,
-                              (3, 3), padding='same',
+                              (3, 3),
+                              padding='same',
                               activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
         self.model.add(Dropout(0.25))
@@ -62,8 +94,9 @@ class Model:
 
         # TODO: Evaluate other optimizers
         self.model.compile(loss=categorical_crossentropy, optimizer=Adadelta(), metrics=['accuracy'])
+        self.model.summary()
 
-    def train(self, batch_size=16, epochs=20):
+    def train(self, batch_size=16, epochs=10):
         train_datagen = ImageDataGenerator(
             shear_range=0.2,
             rotation_range=180,
@@ -71,9 +104,13 @@ class Model:
             width_shift_range=0.1,
             horizontal_flip=True,
             vertical_flip=False,
-            brightness_range=[.2,.1])
+            brightness_range=[.2, .1])
 
-        test_datagen = ImageDataGenerator()
+        test_datagen = ImageDataGenerator(
+            rotation_range=180,
+            height_shift_range=0.1,
+            width_shift_range=0.1,
+            brightness_range=[.2, .1])
 
         train_generator = train_datagen.flow_from_directory(
             'data/train',
@@ -86,16 +123,17 @@ class Model:
             'data/validation',
             target_size=(300, 300),
             batch_size=batch_size,
-            class_mode='categorical')
+            class_mode='categorical',
+            shuffle=True)
 
-
-        self.model.fit_generator(
+        fit_generator = self.model.fit_generator(
             train_generator,
-            steps_per_epoch=351,
+            steps_per_epoch=300,
             epochs=epochs,
             validation_data=validation_generator,
-            validation_steps=46)
+            validation_steps=78)
 
+        visualize(epochs, fit_generator)
         self.__save_weights('%s_epochs_gang_gang.h5' % epochs)
 
     def test(self, weights_file, img, classification):
