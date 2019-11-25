@@ -8,9 +8,9 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adadelta
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-from tensorflow.keras.applications.resnet50 import ResNet50
+# from tensorflow.keras.applications.resnet50 import ResNet50
 
-r = ResNet50()
+# r = ResNet50()
 
 '''
 Model instance class with training and testing methods. Classifies chess pieces in images from 
