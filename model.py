@@ -5,7 +5,7 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D
 from tensorflow.keras.layers import Dropout, Flatten, Dense
 from tensorflow.keras.losses import categorical_crossentropy
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.optimizers import Adadelta
+from tensorflow.keras.optimizers import Adadelta, SGD
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 # from tensorflow.keras.applications.resnet50 import ResNet50
@@ -64,36 +64,37 @@ def visualize(epochs, fit_generator):
 class Model:
     def __init__(self):
         self.model = Sequential()
-        self.model.add(Conv2D(32,
-                              (3, 3),
-                              input_shape=(300, 300, 3),
-                              padding='same',
-                              activation='relu'))
-        self.model.add(Conv2D(32,
-                              (3, 3),
-                              padding='same',
-                              activation='relu'))
-        self.model.add(MaxPooling2D(pool_size=(2, 2)))
-        self.model.add(Dropout(0.25))
+        self.model.add(Conv2D(32, (3, 3), input_shape=(300, 300, 3), padding='same', activation='relu'))
+        self.model.add(Conv2D(32, (3, 3), padding='same', activation='relu'))
+        self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+        # self.model.add(Dropout(0.25))
 
-        self.model.add(Conv2D(64,
-                              (3, 3),
-                              padding='same',
-                              activation='relu'))
-        self.model.add(Conv2D(64,
-                              (3, 3),
-                              padding='same',
-                              activation='relu'))
-        self.model.add(MaxPooling2D(pool_size=(2, 2)))
-        self.model.add(Dropout(0.25))
+        self.model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
+        self.model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
+        self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+        # self.model.add(Dropout(0.5))
+
+        self.model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
+        self.model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
+        self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+        self.model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
+        self.model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
+        self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+        self.model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
+        self.model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
+        self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
         self.model.add(Flatten())
+        self.model.add(Dense(512, activation='relu'))
         self.model.add(Dropout(0.5))
-        self.model.add(Dense(64, activation='relu'))
+        self.model.add(Dense(512, activation='relu'))
+        self.model.add(Dropout(0.5))
         self.model.add(Dense(num_classes, activation='softmax'))
 
-        # TODO: Evaluate other optimizers
-        self.model.compile(loss=categorical_crossentropy, optimizer=Adadelta(), metrics=['accuracy'])
+        sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
+        self.model.compile(loss=categorical_crossentropy, optimizer=sgd, metrics=['categorical_accuracy'])
         self.model.summary()
 
     def train(self, batch_size=16, epochs=10):
@@ -113,14 +114,14 @@ class Model:
             brightness_range=[.2, .1])
 
         train_generator = train_datagen.flow_from_directory(
-            'data/train',
+            'data\\train',
             target_size=(300, 300),
             batch_size=batch_size,
             class_mode='categorical',
             shuffle=True)
 
         validation_generator = test_datagen.flow_from_directory(
-            'data/validation',
+            'data\\validation',
             target_size=(300, 300),
             batch_size=batch_size,
             class_mode='categorical',
@@ -133,7 +134,7 @@ class Model:
             validation_data=validation_generator,
             validation_steps=78)
 
-        visualize(epochs, fit_generator)
+        # visualize(epochs, fit_generator)
         self.__save_weights('%s_epochs_gang_gang.h5' % epochs)
 
     def test(self, weights_file, img, classification):
