@@ -8,6 +8,8 @@ Chess piece classification CNN built with TensorFlow.
 
 See `requirements.txt` or run `pip install -r requirements.txt`.
 
+The `plot_model` Keras function requires GraphViz to be installed and in PATH.
+
 ### Preprocessing
 
 ### Training
