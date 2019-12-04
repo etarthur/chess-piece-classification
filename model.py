@@ -141,7 +141,7 @@ class Model:
             plt.legend(loc='lower left')
             plt.savefig(os.path.join('plots', '{}_model_{}_plot.png'.format(epochs, key)))
 
-    def test(self, weights_file, img, classification):
+    def predict(self, weights_file, img):
         """
         Evaluates the given image with the given weights.
         """
