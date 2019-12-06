@@ -84,7 +84,7 @@ class Model:
         self.model.add(Dense(num_classes, activation='softmax'))
 
         self.model.compile(loss=categorical_crossentropy, optimizer=Adadelta(), metrics=['accuracy'])
-        plot_model(self.model, to_file='model.png')
+        plot_model(self.model, to_file='model.png', show_shapes=True)
         self.model.summary()
 
     def train(self, batch_size=64, epochs=720):
