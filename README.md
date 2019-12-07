@@ -4,7 +4,7 @@ Chess piece classification CNN built with TensorFlow.
 
 ## Introduction
 
-Our model has a 94% validation accuracy for the chess piece classes we attempted to classify. Below is our CNN architecture model. 
+Our model has a 94% validation accuracy for our chess piece classes. Below is a plot of the [model](model.png) architecture. 
 
 ![CNN Architecture](model.png)
 
