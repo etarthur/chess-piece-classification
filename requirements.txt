@@ -1,7 +1,7 @@
 matplotlib
 numpy
 keras==2.1.1
-tensorflow==1.15.0
+tensorflow==2.11.1
 tensorboard<1.16.0,>=1.15.0
 tensorflow-gpu
 tensorflow-estimator==1.15.1
